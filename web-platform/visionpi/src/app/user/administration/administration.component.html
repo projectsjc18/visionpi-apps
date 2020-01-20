@@ -1,0 +1,272 @@
+<h2 class="mat-h2">Usuarios > Administración > Control de Usuarios</h2>
+<mat-divider></mat-divider>
+<mat-tab-group>
+  <mat-tab label="All">
+    <mat-form-field>
+      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+    </mat-form-field>
+    <div class="example-container mat-elevation-z8">
+      <div class="example-loading-shade" *ngIf="isLoadingResults || isRateLimitReached">
+        <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
+        <div class="example-rate-limit-reached" *ngIf="isRateLimitReached">
+          VisionPi's API rate limit has been reached. It will be reset in one minute.
+        </div>
+      </div>
+      <div class="example-table-container">
+        <table mat-table [dataSource]="data" class="example-table"
+           matSort matSortActive="created" matSortDisableClear matSortDirection="desc">
+           <!-- User Column -->
+           <ng-container matColumnDef="user">
+             <th mat-header-cell *matHeaderCellDef>User</th>
+             <td mat-cell *matCellDef="let row">{{row.username}}</td>
+           </ng-container>
+
+           <!-- FirstName Column -->
+           <ng-container matColumnDef="firstname">
+             <th mat-header-cell *matHeaderCellDef>FirstName</th>
+             <td mat-cell *matCellDef="let row">{{row.firstName}}</td>
+           </ng-container>
+
+           <!-- LastName Column -->
+           <ng-container matColumnDef="lastname">
+             <th mat-header-cell *matHeaderCellDef>LastName</th>
+             <td mat-cell *matCellDef="let row">{{row.lastName}}</td>
+           </ng-container>
+
+           <!-- Email Column -->
+           <ng-container matColumnDef="email">
+             <th mat-header-cell *matHeaderCellDef>Email</th>
+             <td mat-cell *matCellDef="let row">{{row.email}}</td>
+           </ng-container>
+
+           <!-- Profile Column -->
+           <ng-container matColumnDef="profile">
+             <th mat-header-cell *matHeaderCellDef>Profile</th>
+             <td mat-cell *matCellDef="let row">{{row.profile}}</td>
+           </ng-container>
+
+           <!-- Created Column -->
+           <ng-container matColumnDef="created">
+             <th mat-header-cell *matHeaderCellDef mat-sort-header disableClear>
+               Created
+             </th>
+             <td mat-cell *matCellDef="let row">{{row.created_at | date}}</td>
+           </ng-container>
+
+           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+         </table>
+       </div>
+
+       <mat-paginator [length]="resultsLength" [pageSize]="30"></mat-paginator>
+     </div>
+  </mat-tab>
+  <mat-tab label="Add User">
+    <form class="example-form" [formGroup]="userForm">
+      <mat-accordion class="example-headers-align">
+        <mat-expansion-panel [expanded]="step === 0" (opened)="setStep(0)" hideToggle>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              Personal data
+            </mat-panel-title>
+            <mat-panel-description>
+              Type your name and age
+              <mat-icon>account_circle</mat-icon>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <mat-form-field>
+            <input matInput placeholder="First name(s)" formControlName="firstname">
+          </mat-form-field>
+
+          <mat-form-field>
+            <input matInput placeholder="Last name(s)" formControlName="lastname">
+          </mat-form-field>
+
+          <div class="mat-form-field">
+            <mat-radio-group aria-label="Select an option" formControlName="gender">
+              <mat-radio-button class="example-radio-button"
+                                *ngFor="let genre of genres" [value]="genre">
+                  {{genre}}
+              </mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <mat-form-field>
+            <input matInput [matDatepicker]="BirthdatePicker" placeholder="Birthday" formControlName="birthday">
+            <mat-datepicker-toggle matSuffix [for]="BirthdatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #BirthdatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Profile</mat-label>
+            <mat-select formControlName="profile">
+              <mat-option *ngFor="let profile of profiles" [value]="profile.value">
+                {{profile.viewValue}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field class="example-full-width">
+            <input matInput placeholder="Email" formControlName="email">
+            <mat-error *ngIf="email.hasError('email') && !email.hasError('required')">
+              Please enter a valid email address
+            </mat-error>
+            <mat-error *ngIf="email.hasError('required')">
+              Email is <strong>required</strong>
+            </mat-error>
+          </mat-form-field>
+
+          <mat-action-row>
+            <button mat-button color="primary" (click)="nextStep()">Next</button>
+          </mat-action-row>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel [expanded]="step === 1" (opened)="setStep(1)" hideToggle>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              Credentials
+            </mat-panel-title>
+            <mat-panel-description>
+              Type the user and password
+              <mat-icon>lock</mat-icon>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <mat-form-field>
+            <input matInput placeholder="User" formControlName="username" maxlength="25">
+          </mat-form-field>
+
+          <mat-form-field class="example-full-width">
+            <input matInput placeholder="Enter your password" [type]="hide ? 'password' : 'text'" formControlName="password">
+            <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
+              <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <mat-form-field class="example-full-width">
+            <input matInput placeholder="Enter your password" [type]="hide ? 'password' : 'text'" formControlName="confirmPassword">
+            <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
+              <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <mat-action-row>
+            <button mat-button color="warn" (click)="prevStep()">Previous</button>
+            <button mat-button color="primary" (click)="nextStep()">Next</button>
+          </mat-action-row>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel [expanded]="step === 2" (opened)="setStep(2)" hideToggle>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              Address
+            </mat-panel-title>
+            <mat-panel-description>
+              Type the street, city, etc....
+              <mat-icon>map</mat-icon>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <mat-form-field>
+            <input matInput placeholder="Street" formControlName="street" maxlength="25">
+          </mat-form-field>
+
+          <mat-form-field>
+            <input matInput placeholder="City" formControlName="city" maxlength="25">
+          </mat-form-field>
+
+          <mat-form-field>
+            <input matInput placeholder="State/Province" formControlName="state" maxlength="25">
+          </mat-form-field>
+
+          <mat-form-field>
+            <input matInput placeholder="Country" formControlName="country" maxlength="25">
+          </mat-form-field>
+
+          <mat-form-field class="example-full-width">
+            <input matInput #postalCode maxlength="5" placeholder="Postal Code" formControlName="postalCode">
+            <mat-hint align="end">{{postalCode.value.length}} / 5</mat-hint>
+          </mat-form-field>
+
+          <mat-action-row>
+            <button mat-button color="warn" (click)="prevStep()">Previous</button>
+            <button mat-button color="primary" (click)="nextStep()">Next</button>
+          </mat-action-row>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel [expanded]="step === 3" (opened)="setStep(3)" hideToggle>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              Platforms
+            </mat-panel-title>
+            <mat-panel-description>
+              Inform the services and platforms ....
+              <mat-icon>phonelink</mat-icon>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div style="display: flex;  flex-direction: column;">
+            <mat-card class="example-card">
+              <mat-card-header>
+                <!--<mat-icon>computer</mat-icon>-->
+                <mat-card-title>Web</mat-card-title>
+              </mat-card-header>
+              <!--<img mat-card-image src="https://material.angular.io/assets/img/examples/shiba2.jpg" alt="Photo of a Shiba Inu">-->
+              <mat-card-content>
+                <div class="" formGroupName="platforms">
+                  <section class="example-section">
+                    <label>Services: </label>
+                    <label formArrayName="services" *ngFor="let service of userForm.controls.platforms.controls.services.controls; let i = index">
+                      <mat-checkbox class="example-margin" [formControlName]="i">
+                        {{services[i].description}}
+                      </mat-checkbox>
+                    </label>
+                    <!--<mat-checkbox class="example-margin" *ngFor="let service of services">{{service}}</mat-checkbox>-->
+                    <!--<mat-checkbox class="example-margin" [(ngModel)]="checked">Dashboard</mat-checkbox>
+                    <mat-checkbox class="example-margin" [(ngModel)]="checked">Users</mat-checkbox>
+                    <mat-checkbox class="example-margin" [(ngModel)]="indeterminate">Geolocalization</mat-checkbox>
+                    <mat-checkbox class="example-margin" [(ngModel)]="checked">Monitoring</mat-checkbox>
+                    <mat-checkbox class="example-margin" [(ngModel)]="indeterminate">Video-Surveillance</mat-checkbox>-->
+                  </section>
+                  <mat-divider></mat-divider>
+                  <section class="example-section">
+                    <label>Permissions: </label>
+                    <mat-checkbox class="example-margin" *ngFor="let permission of permissions">{{permission}}</mat-checkbox>
+                    <!--<mat-checkbox class="example-margin" [(ngModel)]="checked">Read</mat-checkbox>
+                    <mat-checkbox class="example-margin" [(ngModel)]="checked">Write</mat-checkbox>-->
+                  </section>
+                  <mat-divider></mat-divider>
+                  <section class="example-section">
+                    <label>Notifications: </label>
+                    <mat-checkbox class="example-margin" *ngFor="let notification of notifications">{{notification}}</mat-checkbox>
+                    <!--<mat-checkbox class="example-margin" [(ngModel)]="checked">Telephone</mat-checkbox>
+                    <mat-checkbox class="example-margin" [(ngModel)]="checked">Email</mat-checkbox>
+                    <mat-checkbox class="example-margin" [(ngModel)]="checked">SMS</mat-checkbox>-->
+                  </section>
+                  <mat-divider></mat-divider>
+                  <section class="example-section">
+                    <label>Configurations: </label>
+
+                  </section>
+                </div>
+              </mat-card-content>
+              <!--<mat-card-actions>
+                <button mat-button>LIKE</button>
+              </mat-card-actions>-->
+            </mat-card>
+            <!-- Mobile ..... -->
+          </div>
+
+          <mat-action-row>
+            <button mat-button color="warn" (click)="prevStep()">Previous</button>
+            <!--<button mat-button color="primary" (click)="nextStep()">End</button>-->
+            <button mat-button color="primary" (click)="onSubmit(userForm.value)">Finish</button>
+          </mat-action-row>
+        </mat-expansion-panel>
+
+      </mat-accordion>
+    </form>
+  </mat-tab>
+  <mat-tab label=""></mat-tab>
+</mat-tab-group>

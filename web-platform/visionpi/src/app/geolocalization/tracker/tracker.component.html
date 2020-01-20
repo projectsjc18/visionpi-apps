@@ -1,0 +1,11 @@
+<div class="grid-container">
+  <!--<h1 class="mat-h1">Geolocalización > Monitoreo de Rutas</h1>-->
+  <mat-grid-list cols="2" rowHeight="350px">
+    <mat-grid-tile *ngFor="let map of maps | async" [colspan]="map.cols" [rowspan]="map.rows">
+    	<map  [checkpointsList]="map.checkpoints"
+            [routeName]="map.routeName"
+            [operator]="map.operator">
+      </map>
+    </mat-grid-tile>
+  </mat-grid-list>
+</div>
