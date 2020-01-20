@@ -10,6 +10,7 @@ export class AdministrationComponent implements AfterViewInit {
 
   displayedColumns: string[] = ['account', 'device', 'type', 'event', 'status', 'created'];
   data: any;
+  resultsLength: Number = 5;
 
   constructor(public monitoringService: MonitoringService) { }
 
