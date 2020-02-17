@@ -17,7 +17,7 @@ import { AgmCoreModule } from '@agm/core';
     GeolocalizationRoutingModule,
     AngularMaterialModule,
     AgmCoreModule.forRoot({
-      apiKey: 'AIzaSyB3j8h3zpEvJQk9yBw9HYdZou8RMJdlPWM'
+      apiKey: ''
     }),
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
